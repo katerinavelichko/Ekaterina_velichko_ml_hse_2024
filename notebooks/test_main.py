@@ -27,18 +27,19 @@ def test_train_with_valid_data(data, model, test, split):
     os.remove(model)
 
 
-# проверим, что если подать несущетсвующий файл с data или test, то будет ошибка
-@pytest.mark.parametrize("data, model, test, split", [
-    ('../data/fake_reviews.csv', 'm.pkl', None, None),
-    ('fake_reviews.csv', 'm.pkl', None, None),
-    ('../data/singapore_airlines_reviews.csv', 'm.pkl', 'fake_test.csv', None),
+# проверим, что если подать несущетсвующий файл с data или test или split не от 0 до 1, то будет ошибка
+@pytest.mark.parametrize("data, model, test, split, error", [
+    ('../data/fake_reviews.csv', 'm.pkl', None, None, FileNotFoundError),
+    ('fake_reviews.csv', 'm.pkl', None, None, FileNotFoundError),
+    ('../data/singapore_airlines_reviews.csv', 'm.pkl', 'fake_test.csv', None, FileNotFoundError),
+('../data/singapore_airlines_reviews.csv', 'm.pkl', None, 1.3, ValueError),
 ])
-def test_train_with_invalid_data(data, model, test, split):
+def test_train_with_invalid_data(data, model, test, split, error):
     runner = CliRunner()
     result = runner.invoke(train, ['--data', data, '--model', model, '--test', test, '--split', split],
                            standalone_mode=False)
     assert result.exception is not None
-    assert isinstance(result.exception, FileNotFoundError)
+    assert isinstance(result.exception, error)
     assert not os.path.exists('m.pkl')
 
 
@@ -102,10 +103,10 @@ def test_splt(data, random_seed, test_size):
         data = data.drop(columns=['type'])
     length = len(data['text'])
     result, res = splt(data, random_seed, test_size)
-    assert len(res) == math.ceil(test_size * length) # проверяем, что происходит в правильной пропорции
+    assert len(res) == math.ceil(test_size * length)  # проверяем, что происходит в правильной пропорции
     values = data['text'].values
     res_values = []
     for r in result.values:
         res_values.append(r[0])
     res_values = np.array(res_values)
-    assert not np.array_equal(values[:len(result)], res_values) # проверяем, что данные перемешались
+    assert not np.array_equal(values[:len(result)], res_values)  # проверяем, что данные перемешались

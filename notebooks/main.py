@@ -75,7 +75,7 @@ def train(data, model, test, split):
 
     elif split is not None:
         if split < 0.0 or split > 1.0:
-            raise click.BadParameter("split must be > 0 and < 1 ")
+            raise ValueError("split must be > 0 and < 1 ")
         else:
             train, test = splt(reviews, 42, split)
             x_train = bow.fit_transform(train['title_and_text'])
@@ -97,12 +97,6 @@ def train(data, model, test, split):
 
     joblib.dump((m, bow), model)
     click.echo(f"model saved in {model}")
-
-    # Команда `train` должна обучать модель по данным `--data` и складывать результат в `--model` в формате pickle.
-    # Если передается аргумент `--test` или `--split`, то формируется тестовый датасет,
-    # на котором нужно будет посчитать метрики после обучения. `--test`
-    # - пусть до файла с тестовыми данными в том же формате,
-    # что и `--data`. `--split` - доля тестовой выборки, которая отделится от `--data`.
 
 
 @click.command()
